@@ -1,0 +1,39 @@
+{
+  "training_policy": "small_sine_plus_linear_mpc",
+  "koopman_mode": "residual_output",
+  "samples": 60,
+  "feature_names": [
+    "e_y",
+    "e_psi",
+    "v_y",
+    "yaw_rate",
+    "vx",
+    "delta_prev",
+    "steering_rate",
+    "curvature",
+    "curvature_rate",
+    "curvature_preview_1",
+    "curvature_preview_2",
+    "curvature_preview_3",
+    "yaw_rate_prev_1",
+    "yaw_rate_prev_2",
+    "alpha_front_mean",
+    "alpha_rear_mean",
+    "alpha_front_diff",
+    "Fy_front_sum",
+    "Fy_rear_sum",
+    "Fz_front_sum",
+    "Fz_rear_sum",
+    "steering_angle_front_mean"
+  ],
+  "input_names": [
+    "delta_rad"
+  ],
+  "residual_rmse": 0.003093070443925205,
+  "training_prediction_error": {
+    "one_step_rmse": 0.0005375088239784187,
+    "one_step_max": 0.0026009163138944356,
+    "multi_step_rmse": 0.056042539232702956,
+    "multi_step_horizon": 10.0
+  }
+}

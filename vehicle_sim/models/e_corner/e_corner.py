@@ -32,6 +32,9 @@ class ECornerState:
     steering_angle: float = 0.0  # 조향 각도 [rad]
     omega_wheel: float = 0.0   # 휠 각속도 [rad/s]
 
+    slip_angle: float = 0.0    # Tire slip angle [rad]
+    slip_ratio: float = 0.0    # Tire longitudinal slip ratio [-]
+
 
 @dataclass
 class ECornerParameters:
@@ -157,6 +160,9 @@ class ECorner:
         # 6. Self-aligning torque 계산 및 조향 상태 업데이트
         M_align = self.lateral_tire.calculate_aligning_torque(alpha, F_z)
         self.steering.state.self_aligning_torque = M_align
+        self.lateral_tire.state.slip_angle = alpha
+        self.lateral_tire.state.lateral_force = F_y_tire
+        self.lateral_tire.state.aligning_torque = M_align
 
         # 상태 업데이트
         self.state.F_s = F_s
@@ -165,6 +171,8 @@ class ECorner:
         self.state.F_z = F_z
         self.state.steering_angle = steering_angle
         self.state.omega_wheel = omega_wheel
+        self.state.slip_angle = alpha
+        self.state.slip_ratio = kappa
 
         return F_s, F_x_tire, F_y_tire
 
@@ -177,6 +185,8 @@ class ECorner:
             "F_z": self.state.F_z,
             "steering_angle": self.state.steering_angle,  # 휠 조향각
             "omega_wheel": self.state.omega_wheel,        # 휠 각속도
+            "slip_angle": self.state.slip_angle,
+            "slip_ratio": self.state.slip_ratio,
         }
 
     def reset(self) -> None:

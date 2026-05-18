@@ -205,3 +205,11 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Generated experiment outputs. Keep the final poster candidate only; large
+# sweeps and smoke runs can be regenerated from the experiment CLI.
+vehicle_sim/experiments/results/**
+!vehicle_sim/experiments/results/
+!vehicle_sim/experiments/results/award_ready_online_koopman_benchmark_gap_boost/
+!vehicle_sim/experiments/results/award_ready_online_koopman_benchmark_gap_boost/best_candidate/
+!vehicle_sim/experiments/results/award_ready_online_koopman_benchmark_gap_boost/best_candidate/**

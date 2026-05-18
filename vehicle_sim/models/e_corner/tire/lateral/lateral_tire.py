@@ -19,6 +19,7 @@ class LateralTireParameters:
     C_alpha: float = 80000.0   # 코너링 강성 [N/rad]
     mu: float = 0.9            # 마찰계수 [-]
     trail: float = 0.05        # 트레일 길이 [m] (얼라이닝 토크 계산용)
+    model_type: str = "linear"
 
 
 @dataclass
@@ -59,6 +60,7 @@ class LateralTireModel:
                     )
                 ),
                 trail=float(lateral_param.get('trail', LateralTireParameters.trail)),
+                model_type=str(lateral_param.get('model_type', LateralTireParameters.model_type)).lower(),
             )
         self.state = LateralTireState()
 
@@ -101,11 +103,39 @@ class LateralTireModel:
         입력: α (slip angle), F_tire (언스프렁 힘)
         출력: F_y^lateral
         """
-        # F_y = -C_alpha * F_z * alpha
-        Fy = -self.params.C_alpha * alpha
+        model_type = str(self.params.model_type).lower()
+        if model_type in ("linear", "linear_saturation"):
+            Fy = self._calculate_linear_force(alpha)
+        elif model_type == "fiala":
+            Fy = self._calculate_fiala_force(alpha, F_tire)
+        else:
+            raise ValueError(f"Unsupported lateral tire model_type: {self.params.model_type}")
         Fy_max = abs(self.params.mu * F_tire)
         Fy_limited = float(np.clip(Fy, -Fy_max, Fy_max))
         return Fy_limited
+
+    def _calculate_linear_force(self, alpha: float) -> float:
+        """Existing linear cornering-stiffness model."""
+        return float(-self.params.C_alpha * alpha)
+
+    def _calculate_fiala_force(self, alpha: float, F_tire: float) -> float:
+        """Fiala tire force with the existing sign convention."""
+        C_alpha = max(abs(float(self.params.C_alpha)), 1.0e-9)
+        mu = max(abs(float(self.params.mu)), 1.0e-9)
+        Fz = max(abs(float(F_tire)), 1.0e-9)
+        alpha = float(np.clip(alpha, -1.45, 1.45))
+        alpha_sl = float(np.arctan(3.0 * mu * Fz / C_alpha))
+        if abs(alpha) >= alpha_sl:
+            return float(-mu * Fz * np.sign(alpha))
+
+        tan_alpha = float(np.tan(alpha))
+        abs_tan = abs(tan_alpha)
+        Fy = (
+            -C_alpha * tan_alpha
+            + (C_alpha * C_alpha / (3.0 * mu * Fz)) * abs_tan * tan_alpha
+            - (C_alpha ** 3 / (27.0 * mu * mu * Fz * Fz)) * (tan_alpha ** 3)
+        )
+        return float(Fy)
 
     def calculate_aligning_torque(self, alpha: float, F_tire: float,
                                   Fy_override: Optional[float] = None) -> float:
@@ -125,6 +155,7 @@ class LateralTireModel:
             "slip_angle": self.state.slip_angle,
             "lateral_force": self.state.lateral_force,
             "aligning_torque": self.state.aligning_torque,
+            "model_type": self.params.model_type,
         }
 
     def reset(self) -> None:
