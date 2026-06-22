@@ -1,6 +1,6 @@
 <div align="center">
-  <a href="assets/poster_final.pdf">
-    <img src="assets/poster_final.png" alt="Final Poster PDF Preview" width="900">
+  <a href="assets/자동차 공학회_여진승_포스터_최종.pdf">
+    <img src="assets/자동차 공학회_여진승_포스터_최종.png" alt="Final Poster PDF Preview" width="900">
   </a>
   <br>
   <sub>Click the poster image to open the PDF version.</sub>
@@ -192,8 +192,8 @@ vehicle_sim/models/e_corner/tire/lateral/lateral_tire.py
 본 연구의 최종 학회 포스터는 아래 경로에 저장되어 있습니다.
 
 ```text
-assets/poster_final.pdf
-assets/poster_final.png
+assets/자동차 공학회_여진승_포스터_최종.pdf
+assets/자동차 공학회_여진승_포스터_최종.png
 ```
 
 README 상단의 포스터 이미지를 클릭하면 PDF 원본을 열 수 있습니다.
