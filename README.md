@@ -10,8 +10,8 @@
 
 # EDMD-Koopman Residual MPC for Vehicle Path Tracking
 
-차량 횡방향 경로 추종 성능 향상을 위한
-**EDMD-Koopman residual correction 기반 MPC 연구 프로토타입**입니다.
+차량 횡방향 경로 추종 성능 향상을 목표로,
+**EDMD-Koopman residual correction 기반 MPC 구조를 설계·구현하고 nonlinear vehicle plant에서 검증한 연구 프로젝트**입니다.
 
 본 연구는 nonlinear vehicle plant와 nominal linear bicycle model 사이의 예측 오차를 residual로 정의하고, 이를 EDMD-Koopman predictor로 보정하는 MPC 구조를 구현하고 비교한 프로젝트입니다.
 
@@ -39,7 +39,7 @@ Linear bicycle model 기반 MPC는 계산이 빠르고 구조가 단순하다는
 
 본 연구에서는 이 문제를 다음과 같이 접근했습니다.
 
-```text id="my7mnp"
+```text
 linear bicycle model이 빠르게 기본 예측을 수행하고,
 EDMD-Koopman residual predictor가 선형 모델이 틀릴 부분을 보정한다.
 ```
@@ -53,13 +53,13 @@ EDMD-Koopman residual predictor가 선형 모델이 틀릴 부분을 보정한�
 
 본 연구의 residual은 다음과 같이 정의합니다.
 
-```text id="23jl5p"
+```text
 residual = 실제 nonlinear plant의 다음 상태 - linear bicycle model의 다음 상태 예측
 ```
 
 상태 변수는 차량 횡방향 경로 추종에 필요한 4개 값으로 구성됩니다.
 
-```text id="eu7ufo"
+```text
 x = [e_y, e_psi, v_y, yaw_rate]^T
 ```
 
@@ -74,25 +74,25 @@ x = [e_y, e_psi, v_y, yaw_rate]^T
 
 Linear bicycle model은 다음 상태를 예측합니다.
 
-```text id="lxe0bd"
+```text
 x_nom_next = linear_bicycle_predictor(x_k, delta_k)
 ```
 
 하지만 실제 nonlinear plant는 타이어 비선형성, 마찰 변화, 큰 조향 입력 등의 영향으로 선형 모델과 다른 다음 상태를 보입니다.
 
-```text id="gecddd"
+```text
 residual = VehicleBody_true_next - x_nom_next
 ```
 
 EDMD-Koopman residual predictor는 이 residual을 예측합니다.
 
-```text id="urass1"
+```text
 r_koopman = KoopmanResidualPredictor(x_k, context_k, delta_k)
 ```
 
 최종적으로 MPC는 다음과 같이 보정된 상태 예측을 사용합니다.
 
-```text id="t4lopu"
+```text
 x_pred = x_nom_next + r_koopman
 ```
 
@@ -114,7 +114,7 @@ x_pred = x_nom_next + r_koopman
 
 Linear MPC는 nominal linear bicycle model만을 prediction model로 사용합니다.
 
-```text id="9e9h97"
+```text
 x_pred = x_nom_next
 ```
 
@@ -129,7 +129,7 @@ x_pred = x_nom_next
 
 Fixed Koopman MPC는 초기 학습 데이터로 EDMD-Koopman residual predictor를 학습한 뒤, 주행 중에는 모델을 업데이트하지 않습니다.
 
-```text id="mffevz"
+```text
 x_pred = x_nom_next + r_koopman
 ```
 
@@ -151,7 +151,7 @@ x_pred = x_nom_next + r_koopman
 Online Koopman MPC는 Fixed Koopman MPC와 같은 초기 EDMD 모델에서 시작합니다.
 이후 주행 중 관측되는 plant transition data를 이용하여 residual predictor를 matrix RLS 방식으로 갱신합니다.
 
-```text id="gj74l6"
+```text
 W_0 : residual matrix initialized by offline EDMD
 W_k : residual matrix updated by online RLS
 ```
@@ -167,7 +167,7 @@ Online update는 다음 상황에서 의미가 있습니다.
 
 단, online update가 항상 성능을 향상시키는 것은 아니므로, RLS update에는 guard를 적용했습니다.
 
-```text id="shttfg"
+```text
 - update가 residual error를 악화시키면 reject
 - update 크기가 너무 크면 reject
 - update 이후 제어 입력 변화가 과도하면 reject
@@ -183,7 +183,7 @@ Residual이 발생하는 원인을 더 잘 설명하기 위해 차량 상태, �
 
 본 연구에서 사용한 tire-augmented feature는 다음과 같습니다.
 
-```text id="fxkm2v"
+```text
 e_y
 e_psi
 v_y
@@ -221,7 +221,7 @@ steering_angle_front_mean
 
 이 feature vector는 polynomial lifting을 통해 Koopman observable로 확장됩니다.
 
-```text id="cm0e0w"
+```text
 observable = [1, x_i, x_i^2, x_i * x_j]
 ```
 
@@ -235,7 +235,7 @@ EDMD는 Koopman predictor를 초기 학습하기 위해 사용됩니다.
 
 학습 데이터는 다음 형태로 구성됩니다.
 
-```text id="ob0yv6"
+```text
 current observable: z_k
 steering input:     delta_k
 next target:        residual_{k+1}
@@ -243,13 +243,13 @@ next target:        residual_{k+1}
 
 EDMD는 다음 관계를 가장 잘 만족하는 선형 행렬을 찾습니다.
 
-```text id="cz7foa"
+```text
 z_{k+1} ≈ A z_k + B delta_k
 ```
 
 그리고 output matrix `C`를 통해 lifted observable에서 residual prediction을 얻습니다.
 
-```text id="6mp344"
+```text
 r_koopman = C z_{k+1}
 ```
 
@@ -262,7 +262,7 @@ Online Koopman MPC는 같은 EDMD 결과에서 시작한 뒤, 주행 중 RLS로 
 
 MPC의 최적화 문제 자체는 4차원 상태를 기준으로 구성됩니다.
 
-```text id="h08oy4"
+```text
 x = [e_y, e_psi, v_y, yaw_rate]
 u = delta
 ```
@@ -270,13 +270,13 @@ u = delta
 Koopman observable은 MPC의 직접적인 optimization variable이 아닙니다.
 105차원 observable은 residual prediction을 위한 내부 표현이며, 최종적으로는 보정된 4차원 next-state prediction이 MPC에 사용됩니다.
 
-```text id="44b6fl"
+```text
 x_next_pred = x_nom_next + r_koopman
 ```
 
 코드에서는 이 보정 예측함수를 현재 상태 주변에서 국소 선형화하여 다음 형태로 만든 뒤 MPC QP에 사용합니다.
 
-```text id="i8tnqs"
+```text
 x_next ≈ F x + G delta + d
 ```
 
@@ -292,7 +292,7 @@ MPC는 조향각 크기와 조향각 변화율에 제한을 두고, lateral erro
 
 따라서 차량 입력 구조는 다음과 같이 단순화했습니다.
 
-```text id="ndk7xv"
+```text
 single bicycle steering command: delta_cmd [rad]
 front steering: FL/FR Ackermann steering angle
 rear steering: fixed
@@ -338,7 +338,7 @@ rear steering: fixed
 
 ## Repository Structure
 
-```text id="rm86o8"
+```text
 vehicle_sim/
 ├── controllers/
 │   └── path_tracking_mpc/
@@ -394,7 +394,7 @@ assets/
 
 본 연구의 최종 학회 포스터는 아래 경로에 포함되어 있습니다.
 
-```text id="g0xx68"
+```text
 assets/자동차 공학회_여진승_포스터_최종.pdf
 assets/자동차 공학회_여진승_포스터_최종.png
 ```
@@ -407,7 +407,7 @@ README 상단의 포스터 이미지를 클릭하면 PDF 원본을 확인할 수
 
 최종 후보 실험 결과는 다음 경로에 저장되어 있습니다.
 
-```text id="cl7z8s"
+```text
 vehicle_sim/experiments/results/award_ready_online_koopman_benchmark_gap_boost/best_candidate/
 ```
 
@@ -420,7 +420,7 @@ vehicle_sim/experiments/results/award_ready_online_koopman_benchmark_gap_boost/b
 
 저장소 루트에서 다음 명령으로 benchmark를 실행할 수 있습니다.
 
-```bash id="dhh9sd"
+```bash
 python -m vehicle_sim.experiments.edmd_koopman_mpc_mvp \
   --scenario nonstationary_adaptive_technical_course \
   --out-dir vehicle_sim/experiments/results/manual_run
@@ -428,7 +428,7 @@ python -m vehicle_sim.experiments.edmd_koopman_mpc_mvp \
 
 Windows PowerShell에서는 다음과 같이 실행할 수 있습니다.
 
-```powershell id="eaaem6"
+```powershell
 python -m vehicle_sim.experiments.edmd_koopman_mpc_mvp `
   --scenario nonstationary_adaptive_technical_course `
   --out-dir vehicle_sim\experiments\results\manual_run
@@ -451,13 +451,13 @@ python -m vehicle_sim.experiments.edmd_koopman_mpc_mvp `
 | Steering interface          | Direct Ackermann wrapper                      |
 | Rear steering               | fixed                                         |
 | Tire model                  | optional Fiala lateral tire model             |
-| Solver                      | CVX / OSQP based prototype                    |
+| Solver                      | CVX / OSQP based research implementation      |
 
 ---
 
 ## Notes on Runtime
 
-본 구현은 Python/CVX 기반 연구 프로토타입입니다.
+본 구현은 Python/CVX 기반의 simulation validation용 연구 구현입니다.
 
 최종 실험 로그 기준으로 평균 solve time은 20 Hz 제어 주기 근처에서 동작 가능한 수준이었지만, 일부 worst-case에서는 50 ms 제어 주기를 초과하는 구간이 있었습니다.
 
@@ -503,7 +503,7 @@ python -m vehicle_sim.experiments.edmd_koopman_mpc_mvp `
 
 본 연구에는 다음과 같은 한계가 있습니다.
 
-* Python/CVX 기반 prototype이므로 hard real-time 보장은 어렵습니다.
+* Python/CVX 기반 연구 구현이므로 hard real-time 보장은 어렵습니다.
 * 실험은 simulation 환경에서 수행되었습니다.
 * E-Corner plant 자체는 연구실 제공 모델을 사용했습니다.
 * Online RLS update는 guard를 적용했지만, 모든 조건에서 성능 향상을 보장하지는 않습니다.
@@ -515,7 +515,7 @@ python -m vehicle_sim.experiments.edmd_koopman_mpc_mvp `
 
 추가 설명은 아래 문서에서 확인할 수 있습니다.
 
-```text id="deu0k5"
+```text
 docs/koopman_mpc_explanation.md
 docs/professor_qa.md
 ```
