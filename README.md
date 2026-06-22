@@ -1,3 +1,13 @@
+<div align="center">
+  <a href="assets/poster_final.pdf">
+    <img src="assets/poster_final.png" alt="Final Poster PDF Preview" width="900">
+  </a>
+  <br>
+  <sub>Click the poster image to open the PDF version.</sub>
+</div>
+
+<br>
+
 # EDMD-Koopman Residual MPC for Vehicle Path Tracking
 
 본 저장소는 차량 횡방향 경로 추종을 위한
@@ -13,7 +23,7 @@
 
 ---
 
-## 연구 개요
+## Research Overview
 
 차량의 횡방향 거동은 타이어 비선형성, 노면 마찰계수 변화, 큰 조향 입력, 횡가속도 등의 영향으로 인해 본질적으로 비선형 특성을 가집니다.
 
@@ -23,7 +33,7 @@ Linear bicycle model 기반 MPC는 계산이 빠르고 구조가 단순하다는
 본 연구에서는 이러한 한계를 보완하기 위해,
 **linear bicycle model을 nominal prediction model로 사용하고, nonlinear plant와의 예측 오차를 EDMD-Koopman residual predictor로 보정하는 MPC 구조**를 구성하였습니다.
 
-비교한 제어기는 다음과 같습니다.
+본 저장소에서 비교한 제어기는 다음과 같습니다.
 
 1. Linear bicycle model MPC
 2. Fixed residual EDMD-Koopman MPC
@@ -31,7 +41,7 @@ Linear bicycle model 기반 MPC는 계산이 빠르고 구조가 단순하다는
 
 ---
 
-## 핵심 아이디어
+## Core Idea
 
 본 연구에서 사용한 plant는 연구실에서 제공받은 E-Corner 기반 nonlinear vehicle simulation model입니다.
 MPC 내부의 예측 모델은 plant 자체가 아니라, 제어 입력을 계산하기 위한 단순화된 prediction model입니다.
@@ -56,9 +66,9 @@ x_pred = x_nom_next + r_koopman
 
 ---
 
-## Controller 구성
+## Controller Architecture
 
-### 1. Linear bicycle model MPC
+### 1. Linear Bicycle Model MPC
 
 Linear MPC는 linear bicycle model만을 prediction model로 사용합니다.
 
@@ -90,8 +100,8 @@ Online Koopman MPC는 Fixed Koopman MPC와 동일한 초기 EDMD 모델에서 �
 이후 주행 중 관측되는 plant transition data를 이용하여 matrix RLS 방식으로 residual predictor를 온라인 갱신합니다.
 
 ```text
-W_0 : offline EDMD로 초기화된 residual matrix
-W_k : online RLS update로 갱신되는 residual matrix
+W_0 : residual matrix initialized by offline EDMD
+W_k : residual matrix updated by online RLS
 ```
 
 이를 통해 제한된 초기 데이터만 사용하는 경우보다
@@ -99,14 +109,14 @@ W_k : online RLS update로 갱신되는 residual matrix
 
 ---
 
-## 차량 모델 사용 조건
+## Vehicle Model Assumption
 
 본 연구에서는 연구실에서 제공받은 E-Corner 기반 차량 plant를 사용하였습니다.
 
 다만 본 연구의 목적은 E-Corner 차량의 독립 4륜 조향 성능을 평가하는 것이 아니라,
 일반적인 차량 경로 추종 문제에서 residual correction 기반 MPC의 효과를 확인하는 것입니다.
 
-따라서 다음과 같이 차량 입력 구조를 단순화하였습니다.
+따라서 차량 입력 구조를 다음과 같이 단순화하였습니다.
 
 ```text
 single bicycle steering command: delta_cmd [rad]
@@ -119,7 +129,7 @@ rear steering: fixed
 
 ---
 
-## 주요 코드 구조
+## Repository Structure
 
 ```text
 vehicle_sim/controllers/path_tracking_mpc/
@@ -139,7 +149,7 @@ vehicle_sim/controllers/path_tracking_mpc/
 
 * `mpc.py`
 
-  * Linear MPC, fixed Koopman MPC, online Koopman MPC controller logic
+  * Linear MPC, fixed Koopman MPC, and online Koopman MPC controller logic
 
 * `rls.py`
 
@@ -177,17 +187,16 @@ vehicle_sim/models/e_corner/tire/lateral/lateral_tire.py
 
 ---
 
-## 최종 포스터
+## Final Poster
 
-아래 이미지는 본 연구의 최종 학회 포스터입니다.
-
-![Final Poster](assets/poster_final.png)
-
-PDF 원본은 다음 경로에 둘 수 있습니다.
+본 연구의 최종 학회 포스터는 아래 경로에 저장되어 있습니다.
 
 ```text
 assets/poster_final.pdf
+assets/poster_final.png
 ```
+
+README 상단의 포스터 이미지를 클릭하면 PDF 원본을 열 수 있습니다.
 
 ---
 
